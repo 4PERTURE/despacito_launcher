@@ -1,0 +1,68 @@
+language: android
+
+sudo: true # y tho
+
+env:
+
+global:
+
+- COMPILE_SDK_VERSION=28 
+
+- BUILD_TOOLS_VERSION=28.0.3
+
+android:
+
+components:
+
+- tools # Update android-sdk (also called android-sdk-tools)
+
+- platform-tools
+
+- tools # Write the second time to update to thes newest as described in the document
+
+- build-tools-${BUILD_TOOLS_VERSION} # For building
+
+- android-${COMPILE_SDK_VERSION} # For building
+
+- extra-android-m2repository # Support library
+
+# whitelist
+
+branches:
+
+only:
+
+- d-alpha
+
+before_install:
+
+- chmod +x gradlew
+
+script: ./gradlew assembleRelease
+
+install:
+
+- sdkmanager --list || true # Debug / Observation
+
+- echo y | sdkmanager "platforms;android-28"
+
+- avdmanager --list || true # Debug / Observation
+
+before_deploy:
+
+- chmod +x scripts/changelog.sh
+
+- cp app/build/outputs/apk/release/*.apk DL2-$TRAVIS_BUILD_NUMBER.apk
+
+deploy:
+
+- provider: script
+
+skip_cleanup: true
+
+script: "sh scripts/deploy-telegram.sh"
+
+on:
+
+branch: d-alpha
+
